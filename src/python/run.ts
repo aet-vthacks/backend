@@ -1,40 +1,49 @@
+import { Exercise } from "models";
 import { spawn } from "node:child_process";
-import { checks, FailedInterpret, FunctionOutputData, FunctionReturnData, OutputData, ScriptCheck, SuccessfulInterpret, VariableData } from "python";
+import { FailedInterpret, FunctionOutputData, FunctionReturnData, OutputData, ScriptCheck, SuccessfulInterpret, VariableData } from "python";
+import { getRepository } from "typeorm";
 
-async function testExercise(code: string, exercise: number) {
-	const check = checks.find(check => check.exerciseNumber === exercise)!;
-	const tests: { status: boolean, values?: unknown }[] = [];
+export async function testExercise(code: string, exercise: number) {
+	const exercise2 = await getRepository(Exercise)
+		.findOne({ number: exercise });
+
+	const check = exercise2!.check;
+	const tests: { status: boolean, values?: unknown, raw: SuccessfulInterpret | FailedInterpret }[] = [];
 
 	if (check.testingType === "function-output" || check.testingType === "function-return") {
+
 		for (let iter = 0; iter < check.data.length; iter++) {
 			const data = check.data as FunctionOutputData;
 			const output = await interpret(code, data[iter].input as string);
-
-			if (output.success === true) {
-				tests.push(validateCheck(check, output as SuccessfulInterpret, iter));
-				continue;
-			}
-
-			tests.push({ status: false });
+			tests.push(validateCheck(check, output as SuccessfulInterpret, iter));
 		}
-	} else {
-		const output = await interpret(code);
-		tests.push(validateCheck(check, output as SuccessfulInterpret, 0));
 	}
+
+	const output = await interpret(code);
+	tests.push(validateCheck(check, output as SuccessfulInterpret, 0));
 
 	return tests;
 }
 
 function validateCheck(check: ScriptCheck, data: SuccessfulInterpret, index: number): {
 	status: boolean,
-	values?: unknown
+	values?: unknown,
+	raw: SuccessfulInterpret | FailedInterpret
 } {
+	if (data.success === false) {
+		return {
+			status: false,
+			raw: data
+		};
+	}
+
 	switch (check.testingType) {
 		case "output": {
 			const output = check.data as OutputData;
 			const lines = data.stdout.split("\n");
 			return {
-				status: lines.includes(output)
+				status: lines.includes(output),
+				raw: data
 			};
 		}
 
@@ -56,21 +65,24 @@ function validateCheck(check: ScriptCheck, data: SuccessfulInterpret, index: num
 
 			return {
 				status: truthy,
-				values
+				values,
+				raw: data
 			};
 		}
 
 		case "function-output": {
 			const output = check.data as FunctionOutputData;
 			return {
-				status: data.stdout.trim() === output[index].output.trim()
+				status: data.stdout.trim() === output[index].output.trim(),
+				raw: data
 			};
 		}
 
 		case "function-return": {
 			const output = check.data as FunctionReturnData;
 			return {
-				status: data.returns === output[index].output
+				status: data.returns === output[index].output,
+				raw: data
 			};
 		}
 	}

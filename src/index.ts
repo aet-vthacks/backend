@@ -4,7 +4,7 @@ import { logger } from "@tinyhttp/logger";
 import { account } from "middleware";
 import { json } from "milliparsec";
 import "python";
-import { exercise, login, logout, me, signup, uploadExercise } from "routes";
+import { checkCode, exercise, login, logout, me, signup, uploadExercise } from "routes";
 import "./db";
 
 // Unknown is used for templating engines
@@ -46,5 +46,6 @@ server.get("/v1/me", account, me);
 server.get("/v1/me/exercise/:id", account, exercise);
 
 server.post("/__private/exercise", uploadExercise);
+server.post("/v1/code", checkCode);
 
 server.listen(8080);

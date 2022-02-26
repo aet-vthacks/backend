@@ -1,7 +1,15 @@
 import { Request, Response } from "@tinyhttp/app";
 import { Exercise } from "models";
-import { ScriptCheck } from "python";
+import { ScriptCheck, testExercise } from "python";
 import { getRepository } from "typeorm";
+
+export async function checkCode(req: Request, res: Response) {
+	const result = await testExercise(req.body.code, req.body.number);
+	res.status(200)
+		.json({
+			data: result
+		});
+}
 
 export async function uploadExercise(req: Request, res: Response) {
 	const body = req.body as Record<string, string | undefined>;
