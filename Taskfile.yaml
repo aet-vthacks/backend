@@ -1,0 +1,14 @@
+version: '3'
+
+tasks:
+  dev:
+    desc: 'Hot-reloading local Docker environment'
+    cmds:
+      - cmd: docker-compose -f docker/docker-compose.yaml -p learnpy up --build
+        silent: true
+
+  clean:
+    desc: 'Clean the local Docker environment'
+    cmds:
+      - cmd: docker rm -f learnpy-core learnpy-db
+        silent: true

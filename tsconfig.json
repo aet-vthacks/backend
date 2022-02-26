@@ -1,0 +1,17 @@
+{
+	"exclude": [
+		"tsup.config.ts"
+	],
+	"compilerOptions": {
+		"baseUrl": "./src",
+		"rootDir": "./src",
+		"outDir": "./dist",
+		"target": "ESNext",
+		"module": "ESNext",
+		"skipLibCheck": true,
+		"moduleResolution": "Node",
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"strict": true
+	}
+}
