@@ -12,7 +12,6 @@
 		"milliparsec": "^2.2.1",
 		"next-session": "^4.0.4",
 		"pg": "^8.7.3",
-		"python-shell": "^3.0.1",
 		"reflect-metadata": "^0.1.13",
 		"typeorm": "^0.2.44"
 	},
