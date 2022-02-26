@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    container_name: learnpy_backend
+    depends_on:
+      - database
+    environment:
+      NODE_ENV: development
+    networks:
+      - overlay
+    volumes:
+      - ../src:/app/src
+    ports:
+      - 8000:8080
+  database:
+    image: postgres
+    container_name: learnpy_db
+    environment:
+      POSTGRES_PASSWORD: learnpy
+      POSTGRES_USER: learnpy
+      POSTGRES_DB: learnpy
+    networks:
+      - overlay
+    ports:
+      - 5432:5432
+    logging:
+      driver: none
+networks:
+  overlay:
