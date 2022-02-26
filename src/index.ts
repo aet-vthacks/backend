@@ -1,14 +1,14 @@
 import { App } from "@tinyhttp/app";
 import { cors } from "@tinyhttp/cors";
 import { logger } from "@tinyhttp/logger";
+import { account } from "middleware";
 import { json } from "milliparsec";
+// import "python";
 import { login, logout, me, signup } from "routes";
-import { RichRequest } from "types";
 import "./db";
-// import "./temp";
 
 // Unknown is used for templating engines
-const server = new App<unknown, RichRequest>({
+const server = new App({
 	settings: {
 		xPoweredBy: false
 	},
@@ -42,6 +42,6 @@ server.use(cors({
 server.post("/v1/signup", signup);
 server.post("/v1/login", login);
 server.post("/v1/logout", logout);
-server.get("/v1/me", me);
+server.get("/v1/me", account, me);
 
 server.listen(8080);

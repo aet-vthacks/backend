@@ -1,16 +1,30 @@
-import { Response } from "@tinyhttp/app";
-import { RichRequest } from "types";
+import { Request, Response } from "@tinyhttp/app";
+import { getSession } from "middleware";
+import { User } from "models";
+import { getRepository } from "typeorm";
 
 
-export async function me(req: RichRequest, res: Response) {
+export async function me(req: Request, res: Response) {
+	const session = await getSession(req, res);
+	const user = await getRepository(User)
+		.findOne(session.lookup);
+
+	if (!user) {
+		return res.status(404)
+			.json({
+				message: "Not Found",
+				date: new Date()
+			});
+	}
+
 	res.status(200)
 		.json({
 			name: {
-				first: req.user.firstname,
-				last: req.user.lastname
+				first: user.firstname,
+				last: user.lastname
 			},
-			email: req.user.email,
-			pets: req.user.pets,
-			progress: req.user.codeSaves
+			email: user.email,
+			pets: user.pets,
+			progress: user.codeSaves
 		});
 }

@@ -1,9 +1,9 @@
-import { Response } from "@tinyhttp/app";
+import { Request, Response } from "@tinyhttp/app";
+import { getSession } from "middleware";
 import { User } from "models";
 import { getConnection, getRepository } from "typeorm";
-import { RichRequest } from "types";
 
-export async function signup(req: RichRequest, res: Response) {
+export async function signup(req: Request, res: Response) {
 	const body = req.body as Record<string, string | undefined>;
 	if (!body) {
 		res.status(422)
@@ -41,7 +41,9 @@ export async function signup(req: RichRequest, res: Response) {
 
 	try {
 		await getConnection().manager.save(user);
-		req.session.lookup = user.uuid;
+		const session = await getSession(req, res);
+		session.lookup = user.uuid;
+		await session.commit();
 
 		return res.status(200)
 			.json({
@@ -58,7 +60,7 @@ export async function signup(req: RichRequest, res: Response) {
 	}
 }
 
-export async function login(req: RichRequest, res: Response) {
+export async function login(req: Request, res: Response) {
 	const body = req.body as Record<string, string | undefined>;
 	if (!body) {
 		res.status(422)
@@ -96,7 +98,9 @@ export async function login(req: RichRequest, res: Response) {
 			});
 	}
 
-	req.session.lookup = lookup.uuid;
+	const session = await getSession(req, res);
+	session.lookup = lookup.uuid;
+	await session.commit();
 
 	return res.status(200)
 		.json({
@@ -105,8 +109,9 @@ export async function login(req: RichRequest, res: Response) {
 		});
 }
 
-export async function logout(req: RichRequest, res: Response) {
-	if (!req.session.lookup) {
+export async function logout(req: Request, res: Response) {
+	const session = await getSession(req, res);
+	if (!session.lookup) {
 		return res.status(401)
 			.json({
 				message: "Not Authorized",
@@ -114,7 +119,7 @@ export async function logout(req: RichRequest, res: Response) {
 			});
 	}
 
-	await req.session.destroy();
+	await session.destroy();
 	return res.status(200)
 		.json({
 			message: "Success",

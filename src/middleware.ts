@@ -1,24 +1,18 @@
-import { NextFunction, Response } from "@tinyhttp/app";
+import { NextFunction, Request, Response } from "@tinyhttp/app";
 import { User } from "models";
 import nextSession from "next-session";
 import { getRepository } from "typeorm";
-import { RichRequest } from "types";
 
-export async function session(req: RichRequest, res: Response, next: NextFunction) {
-	const getSession = nextSession({
-		cookie: {
-			secure: process.env.NODE_ENV !== "development",
-			sameSite: false
-		}
-	});
+export const getSession = nextSession({
+	cookie: {
+		secure: process.env.NODE_ENV !== "development",
+		sameSite: false
+	}
+});
 
-	req.session = await getSession(req, res);
-	next();
-}
-
-
-export async function account(req: RichRequest, res: Response, next: NextFunction) {
-	if (!req.session.lookup) {
+export async function account(req: Request, res: Response, next: NextFunction) {
+	const session = await getSession(req, res);
+	if (!session.lookup) {
 		return res.status(401)
 			.json({
 				message: "Unauthorized",
@@ -27,7 +21,7 @@ export async function account(req: RichRequest, res: Response, next: NextFunctio
 	}
 
 	const user = await getRepository(User)
-		.findOne(req.session.lookup);
+		.findOne(session.lookup);
 
 	if (!user) {
 		return res.status(500)
@@ -37,6 +31,5 @@ export async function account(req: RichRequest, res: Response, next: NextFunctio
 			});
 	}
 
-	req.user = user;
 	next();
 }
