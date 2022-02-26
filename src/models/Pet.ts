@@ -6,9 +6,15 @@ export class Pet {
 	@PrimaryGeneratedColumn("uuid")
 	public uuid!: string;
 
-	@Column("text", { nullable: false, unique: true })
+	@Column("text", { nullable: false })
 	public name!: string;
 
-	@ManyToOne(type => User, user => user.pets)
+	@Column("text", { nullable: false })
+	public color!: string;
+
+	@Column("text", { nullable: false })
+	public species!: string;
+
+	@ManyToOne(() => User, user => user.pets)
 	public user!: User;
 }

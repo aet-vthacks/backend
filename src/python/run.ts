@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { spawn } from "node:child_process";
 import { checks, FailedInterpret, FunctionOutputData, FunctionReturnData, OutputData, ScriptCheck, SuccessfulInterpret, VariableData } from "python";
 
 async function testExercise(code: string, exercise: number) {
@@ -7,7 +7,8 @@ async function testExercise(code: string, exercise: number) {
 
 	if (check.testingType === "function-output" || check.testingType === "function-return") {
 		for (let iter = 0; iter < check.data.length; iter++) {
-			const output = await interpret(code);
+			const data = check.data as FunctionOutputData;
+			const output = await interpret(code, data[iter].input as string);
 
 			if (output.success === true) {
 				tests.push(validateCheck(check, output as SuccessfulInterpret, iter));
@@ -16,6 +17,9 @@ async function testExercise(code: string, exercise: number) {
 
 			tests.push({ status: false });
 		}
+	} else {
+		const output = await interpret(code);
+		tests.push(validateCheck(check, output as SuccessfulInterpret, 0));
 	}
 
 	return tests;
@@ -36,12 +40,19 @@ function validateCheck(check: ScriptCheck, data: SuccessfulInterpret, index: num
 
 		case "variable": {
 			const checkData = check.data as VariableData;
-			const variables = data.variables;
+			const variables = data.variables.map(([name, value]) => ({ name, value }));
 			let truthy = true;
 
-			const values = variables.map(([name, value]) => {
-				return checkData.includes({ name, value });
-			});
+			// eslint-disable-next-line array-callback-return
+			const values = checkData.map(validationData => {
+				const search = variables.find(actualData => actualData.name === validationData.name);
+
+				if (String(validationData.value) !== String(search?.value)) {
+					truthy = false;
+					return search;
+				}
+			})
+				.filter(Boolean);
 
 			return {
 				status: truthy,
@@ -51,9 +62,8 @@ function validateCheck(check: ScriptCheck, data: SuccessfulInterpret, index: num
 
 		case "function-output": {
 			const output = check.data as FunctionOutputData;
-			console.log(data.stdout);
 			return {
-				status: data.stdout === output[index].output
+				status: data.stdout.trim() === output[index].output.trim()
 			};
 		}
 
@@ -66,35 +76,33 @@ function validateCheck(check: ScriptCheck, data: SuccessfulInterpret, index: num
 	}
 }
 
-async function interpret(code: string) {
+async function interpret(code: string, input?: string) {
 	const result = await new Promise<SuccessfulInterpret | FailedInterpret>((resolve, reject) => {
-		execFile("/usr/bin/python3", ["-u", "/app/src/python/interpreter.py", code], (err, stdout, stderr) => {
-			console.log(err, stdout, stderr);
+		const child = spawn("/usr/bin/python3", ["/app/src/python/interpreter.py", code, input ?? ""]);
+
+		let buffer = Buffer.alloc(0);
+		child.on("error", err => reject(err));
+
+		child.stderr.on("data", (chunk) => {
+			buffer = chunk;
 		});
-		// const child = spawn("/usr/bin/python3", ["/app/src/python/interpreter.py", code]);
 
-		// const buffers = new Array<Buffer>();
-		// child.on("error", err => reject(err));
+		child.stderr.on("end", () => {
+			const data = buffer.toString();
+			const object = JSON.parse(data);
 
-		// child.stdout.on("data", (chunk) => {
-		// 	buffers.push(chunk);
-		// });
+			if (object.success === true) {
+				resolve(object as SuccessfulInterpret);
+			}
 
-		// child.stdout.on("end", () => {
-		// 	const buffer = Buffer.concat(buffers);
-		// 	const data = buffer.toString();
-		// 	const object = JSON.parse(data);
-
-		// 	if (object.success === true) {
-		// 		resolve(object as SuccessfulInterpret);
-		// 	}
-
-		// 	resolve(object as FailedInterpret);
-		// });
+			resolve(object as FailedInterpret);
+		});
 	});
 	return result;
 }
 
 
-let f = await testExercise("import sys\ndef printinp(input):\n	print(input)\nprintinp(sys.argv[1])", 2);
+let f = await testExercise("x = 3\ny = -5", 5);
+// let f = await testExercise("print(\"Hello World!\")", 1);
 console.log(f);
+

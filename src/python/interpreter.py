@@ -2,34 +2,35 @@ import io
 import traceback
 import json
 import sys
+import subprocess
 
 def execute(exe_string):
 	output = dict()
 
-	printOut = sys.stdout
-	new_stdout = io.StringIO()
-	sys.stdout = new_stdout
-
-	try:
-		loc = {}
-		exec(exe_string, {}, loc)
-		if "returnVariable" in loc:
-			output["returns"] = loc["returnVariable"]
-
-		output["variables"] = [(key, value.__repr__()) for key, value in loc.items()]
+	loc = {}
+	returnData = subprocess.run([sys.executable, "-c", exe_string, sys.argv[2], "exec(exe_string, inputs)"],
+								capture_output=True,
+								text=True)
+	if returnData.stderr == "":
 		output["success"] = True
+		output["stdout"] = returnData.stdout
 
-	except Exception as exc:
+		sys.argv = ["exe.py", sys.argv[2]]
+		exec(exe_string, {}, loc)
+		output["variables"] = [(key, value.__repr__()) for key, value in loc.items()]
+
+		for key, value in loc.items():
+			if key == "returnVar":
+				output["returns"] = value
+
+	else:
 		output["success"] = False
-		output["error"] = str(type(exc))[8:-2]
-		output["message"] = exc.args
-		output["trace"] = traceback.format_tb(exc.__traceback__)
+		errorOutput = returnData.stderr.split('\n')
+		output["trace"] = errorOutput[0]
+		output["error"] = errorOutput[1]
+		output["message"] = errorOutput[2]
 
-	output["stdout"] = new_stdout.getvalue()
-
-	sys.stdout = printOut
-	print(json.dumps(output, indent=4))
-
+	print(json.dumps(output), file = sys.__stderr__)
 
 if __name__ == '__main__':
 	execute(sys.argv[1])

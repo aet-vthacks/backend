@@ -1,5 +1,6 @@
 import { Pet } from "models";
 import { BinaryLike, pbkdf2Sync, randomBytes } from "node:crypto";
+import { FailedInterpret, SuccessfulInterpret } from "python";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
@@ -22,11 +23,16 @@ export class User {
 	@Column("text", { nullable: false, unique: true })
 	public lastname!: string;
 
-	@OneToMany(type => Pet, pet => pet.user)
+	@OneToMany(() => Pet, pet => pet.user)
 	public pets!: Pet[];
 
 	@Column("simple-json", { nullable: true })
-	public codeSaves!: [{ level: number, code: string, completed: boolean }];
+	public codeSaves!: {
+		exerciseUUID: string,
+		code: string,
+		completed: boolean
+		testStatus: SuccessfulInterpret | FailedInterpret
+	}[];
 
 	generatePassword(password: BinaryLike): void {
 		const salt = randomBytes(16);

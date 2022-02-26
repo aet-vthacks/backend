@@ -48,11 +48,11 @@ export const checks: ScriptCheck[] = [
 		data: [
 			{
 				input: 10,
-				output: 0
+				output: 20
 			},
 			{
 				input: 1,
-				output: 0
+				output: 2
 			},
 			{
 				input: 0,
@@ -67,6 +67,10 @@ export const checks: ScriptCheck[] = [
 			{
 				name: "x",
 				value: 3
+			},
+			{
+				name: "y",
+				value: 5
 			}
 		]
 	}

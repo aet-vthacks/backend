@@ -3,7 +3,7 @@ import { cors } from "@tinyhttp/cors";
 import { logger } from "@tinyhttp/logger";
 import { account } from "middleware";
 import { json } from "milliparsec";
-// import "python";
+import "python";
 import { login, logout, me, signup } from "routes";
 import "./db";
 
