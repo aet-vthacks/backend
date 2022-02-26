@@ -6,7 +6,7 @@ export class Exercise {
 	@PrimaryGeneratedColumn("uuid")
 	public uuid!: string;
 
-	@Column("number", { nullable: false, unique: true })
+	@Column("int", { nullable: false, unique: true })
 	public number!: number;
 
 	@Column("text", { nullable: false})

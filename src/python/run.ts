@@ -101,8 +101,13 @@ async function interpret(code: string, input?: string) {
 	return result;
 }
 
+// // Lesson 1
+// let f = await testExercise("print(\"Hello World\")", 1);
+// console.log(f);
 
-let f = await testExercise("x = 3\ny = -5", 5);
-// let f = await testExercise("print(\"Hello World!\")", 1);
-console.log(f);
+// // Lesson 2
+// let b = await testExercise("wtvrvariablenameis = 78\nprint(wtvrvariablenameis)" , 2);
+// console.log(b);
+
+// // Lesson 2.5
 
