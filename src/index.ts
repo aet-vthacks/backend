@@ -4,7 +4,7 @@ import { logger } from "@tinyhttp/logger";
 import { account } from "middleware";
 import { json } from "milliparsec";
 import "python";
-import { checkCode, exercise, login, logout, me, signup, uploadExercise } from "routes";
+import { checkCode, exercise, login, logout, me, savePet, signup, uploadExercise } from "routes";
 import "./db";
 
 // Unknown is used for templating engines
@@ -41,11 +41,12 @@ server.use(cors({
 
 server.post("/v1/signup", signup);
 server.post("/v1/login", login);
-server.post("/v1/logout", logout);
+server.get("/v1/logout", account, logout);
 server.get("/v1/me", account, me);
 server.get("/v1/me/exercise/:id", account, exercise);
 
 server.post("/__private/exercise", uploadExercise);
 server.post("/v1/code", checkCode);
+server.post("/v1/me/pet", account, savePet);
 
 server.listen(8080);

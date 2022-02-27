@@ -1,4 +1,4 @@
-import { Exercise, Pet, User } from "models";
+import { Exercise, Pet, Session, User } from "models";
 import "reflect-metadata";
 import { createConnection } from "typeorm";
 
@@ -9,7 +9,7 @@ await createConnection({
 	password: "learnpy",
 	database: "learnpy",
 	synchronize: true,
-	entities: [User, Pet, Exercise]
+	entities: [User, Pet, Exercise, Session]
 });
 
 console.log("Database Connected");

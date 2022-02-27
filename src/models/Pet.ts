@@ -9,8 +9,11 @@ export class Pet {
 	@Column("text", { nullable: false })
 	public name!: string;
 
+	@Column("simple-json", { nullable: false })
+	public colors!: (string | undefined)[];
+
 	@Column("text", { nullable: false })
-	public color!: string;
+	public rarity!: string;
 
 	@Column("text", { nullable: false })
 	public species!: string;

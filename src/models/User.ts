@@ -15,7 +15,7 @@ export class User {
 	private passwordHash!: string;
 
 	@Column("text", { nullable: false, unique: true })
-	public email!: string;
+	public username!: string;
 
 	@Column("text", { nullable: false, unique: true })
 	public firstname!: string;

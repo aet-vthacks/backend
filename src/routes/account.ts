@@ -1,13 +1,62 @@
 import { Request, Response } from "@tinyhttp/app";
 import { getSession } from "middleware";
-import { Exercise, User } from "models";
+import { Exercise, Pet, User } from "models";
 import { getRepository } from "typeorm";
 
+export async function savePet(req: Request, res: Response) {
+	const session = await getSession(req, res);
+	const user = await getRepository(User)
+		.findOne(session.lookup);
+
+	if (!user) {
+		return res.status(404)
+			.json({
+				message: "Not Found",
+				date: new Date()
+			});
+	}
+
+	try {
+		const { name, colors, rarity, species } = req.body;
+
+		const pet = new Pet();
+		pet.name = name;
+		pet.colors = colors;
+		pet.rarity = rarity;
+		pet.species = species;
+		pet.user = user;
+		await getRepository(Pet)
+			.save(pet);
+
+		const currentPets = user.pets ?? [];
+		currentPets.push(pet);
+		user.pets = currentPets;
+		await getRepository(User)
+			.save(user);
+
+		res.status(200)
+			.json({
+				message: "Successful",
+				date: new Date()
+			});
+	} catch {
+		res.status(200)
+			.json({
+				message: "Internal Server Error",
+				date: new Date()
+			});
+	}
+}
 
 export async function me(req: Request, res: Response) {
 	const session = await getSession(req, res);
 	const user = await getRepository(User)
-		.findOne(session.lookup);
+		.findOne({
+			where: {
+				uuid: session.lookup
+			},
+			relations: ["pets"]
+		});
 
 	if (!user) {
 		return res.status(404)
@@ -23,7 +72,7 @@ export async function me(req: Request, res: Response) {
 				first: user.firstname,
 				last: user.lastname
 			},
-			email: user.email,
+			username: user.username,
 			pets: user.pets,
 			progress: user.codeSaves
 		});
