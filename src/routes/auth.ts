@@ -13,8 +13,8 @@ export async function signup(req: Request, res: Response) {
 			});
 	}
 
-	const { firstname, lastname, email, password } = body;
-	if (!firstname || !lastname || !email || !password) {
+	const { firstname, lastname, username, password } = body;
+	if (!(firstname && lastname && username && password)) {
 		res.status(422)
 			.json({
 				message: "Missing Request Data",
@@ -23,7 +23,7 @@ export async function signup(req: Request, res: Response) {
 	}
 
 	const lookup = await getRepository(User)
-		.findOne({ email });
+		.findOne({ username });
 
 	if (lookup) {
 		return res.status(409)
@@ -36,7 +36,7 @@ export async function signup(req: Request, res: Response) {
 	const user = new User();
 	user.firstname = firstname!;
 	user.lastname = lastname!;
-	user.email = email!;
+	user.username = username!;
 	user.generatePassword(password!);
 
 	try {
@@ -70,8 +70,8 @@ export async function login(req: Request, res: Response) {
 			});
 	}
 
-	const { email, password } = body;
-	if (!email || !password) {
+	const { username, password } = body;
+	if (!username || !password) {
 		res.status(422)
 			.json({
 				message: "Missing Request Data",
@@ -80,7 +80,7 @@ export async function login(req: Request, res: Response) {
 	}
 
 	const lookup = await getRepository(User)
-		.findOne({ email });
+		.findOne({ username });
 
 	if (!lookup) {
 		return res.status(404)

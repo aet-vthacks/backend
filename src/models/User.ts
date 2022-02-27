@@ -26,9 +26,13 @@ export class User {
 	@OneToMany(() => Pet, pet => pet.user)
 	public pets!: Pet[];
 
+	@Column("int", { default: 0, nullable: false })
+	public preferredPet!: number;
+
 	@Column("simple-json", { nullable: true })
 	public codeSaves!: {
-		exerciseUUID: string,
+		exerciseUUID: number,
+		claimed: boolean,
 		code: string,
 		completed: boolean
 		testStatus: SuccessfulInterpret | FailedInterpret

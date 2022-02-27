@@ -4,7 +4,7 @@ import { logger } from "@tinyhttp/logger";
 import { account } from "middleware";
 import { json } from "milliparsec";
 import "python";
-import { checkCode, exercise, login, logout, me, savePet, signup, uploadExercise } from "routes";
+import { changePet, checkCode, claimExercise, exercise, getExercises, login, logout, me, saveExercise, savePet, signup, uploadExercise } from "routes";
 import "./db";
 
 // Unknown is used for templating engines
@@ -44,6 +44,10 @@ server.post("/v1/login", login);
 server.get("/v1/logout", account, logout);
 server.get("/v1/me", account, me);
 server.get("/v1/me/exercise/:id", account, exercise);
+server.get("/v1/me/exercise", account, getExercises);
+server.post("/v1/me/exercise/:id/save", saveExercise);
+server.post("/v1/me/pet/change", account, changePet);
+server.post("/v1/me/exercise/claim", account, claimExercise);
 
 server.post("/__private/exercise", uploadExercise);
 server.post("/v1/code", checkCode);
