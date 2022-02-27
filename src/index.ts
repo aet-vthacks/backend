@@ -28,7 +28,7 @@ const server = new App({
 server.set("trust proxy", 1);
 
 const dev = process.env.NODE_ENV === "development";
-const origin = dev ? "http://learnpy.tale.me:3000" : "https://learnpy.tale.me";
+const origin = dev ? "http://slinky.codes:3000" : "https://slinky.codes";
 
 server.use(logger());
 server.use(json());
